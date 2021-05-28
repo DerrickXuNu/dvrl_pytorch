@@ -4,6 +4,7 @@ Pretrain image classification model on source data.
 """
 
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import numpy as np
 
 import torch
@@ -18,7 +19,9 @@ from models.res101_backbone import ResNet101Backbone
 
 
 def train(opt):
-    root_dir = '../data/source'
+
+    current_path = os.path.dirname(__file__)
+    root_dir = os.path.join(current_path, '../data/target')
 
     covid_folder = os.path.join(root_dir, 'covid')
     normal_folder = os.path.join(root_dir, 'normal')
@@ -28,14 +31,11 @@ def train(opt):
 
     # 90% used for train and 10% used fro validation
     covid_indices = list(range(len(covid_image_list)))
-    np.random.shuffle(covid_indices)
-    split = len(covid_image_list) // 10
-    train_idx, val_idx = covid_indices[split:], covid_indices[:split]
+    train_idx, val_idx = covid_indices[100:], covid_indices[:100]
     train_covid_image_list = [covid_image_list[x] for x in train_idx]
     val_covid_image_list = [covid_image_list[x] for x in val_idx]
 
     normal_indices = list(range(len(normal_image_list)))
-    np.random.shuffle(normal_indices)
     split = len(normal_image_list) // 10
     train_idx, val_idx = normal_indices[split:], normal_indices[:split]
     train_normal_image_list = [normal_image_list[x] for x in train_idx]
@@ -47,7 +47,7 @@ def train(opt):
 
     # create corresponding dataloader
     train_dataloader = DataLoader(train_covid_dataset, batch_size=opt.batch_size, shuffle=True, num_workers=4)
-    val_dataloader = DataLoader(val_covid_dataset, batch_size=opt.batch_size, shuffle=False, num_workers=4)
+    val_dataloader = DataLoader(val_covid_dataset, batch_size=opt.batch_size, shuffle=True, num_workers=4)
 
     # load model
     model = ResNet101Backbone(pretrained=True)
@@ -59,10 +59,13 @@ def train(opt):
     else:
         # setup saved model folder
         init_epoch = 0
-        saved_path = helper.setup_train('logs/train_source')
+        saved_path = helper.setup_train(os.path.join(current_path, '../logs/train_target'))
 
-    # define the loss function
-    criterion = nn.CrossEntropyLoss()
+    # define the loss function, use weighted loss
+    weights = torch.tensor([1.0, 10.0])
+    if opt.cuda:
+        weights = weights.cuda()
+    criterion = nn.CrossEntropyLoss(weight=weights)
 
     # specify optimizer
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
