@@ -24,6 +24,7 @@ class ResNet101Backbone(ResNet):
         super().__init__(Bottleneck, [3, 4, 23, 3])
         num_ftrs = 512 * 4
 
+        # nn.CrossEntropyLoess() have softmax function inside, so here we don't apply softmax
         self.linear = nn.Linear(num_ftrs, 2)
 
         if pretrained:
