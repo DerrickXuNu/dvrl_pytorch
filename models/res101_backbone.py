@@ -47,7 +47,7 @@ class ResNet101Backbone(ResNet):
         # 3. load the new state dict
         self.load_state_dict(model_dict)
 
-    def forward(self, x):
+    def forward(self, x, finaly_layer=True):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -61,6 +61,8 @@ class ResNet101Backbone(ResNet):
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
 
+        if not finaly_layer:
+            return x
         x = self.linear(x)
         return x
 

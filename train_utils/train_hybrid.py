@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Pretrain image classification model on source data.
+Pretrain image classification model on hybrid data. Source covid + target covid + target normal
 """
 
 import os
@@ -20,28 +20,21 @@ from models.res101_backbone import ResNet101Backbone
 
 def train(opt):
     current_path = os.path.dirname(__file__)
-    root_dir = os.path.join(current_path, '../data/source')
+    source_dir = os.path.join(current_path, '../data/source')
+    target_dir = os.path.join(current_path, '../data/target')
 
-    covid_folder = os.path.join(root_dir, 'covid')
-    normal_folder = os.path.join(root_dir, 'normal')
+    covid_source_folder = os.path.join(source_dir, 'covid')
+    covid_target_folder = os.path.join(target_dir, 'covid')
+    normal_target_folder = os.path.join(target_dir, 'normal')
 
-    covid_image_list = sorted([os.path.join(covid_folder, x) for x in os.listdir(covid_folder)])
-    normal_image_list = sorted([os.path.join(normal_folder, x) for x in os.listdir(normal_folder)])
+    source_covid_image_list = sorted([os.path.join(covid_source_folder, x) for x in os.listdir(covid_source_folder)])
+    target_covid_image_list = sorted([os.path.join(covid_target_folder, x) for x in os.listdir(covid_target_folder)])
+    normal_image_list = sorted([os.path.join(normal_target_folder, x) for x in os.listdir(normal_target_folder)])
 
-    # 90% used for train and 10% used fro validation
-    covid_indices = list(range(len(covid_image_list)))
-    np.random.shuffle(covid_indices)
-    split = len(covid_image_list) // 10
-    train_idx, val_idx = covid_indices[split:], covid_indices[:split]
-    train_covid_image_list = [covid_image_list[x] for x in train_idx]
-    val_covid_image_list = [covid_image_list[x] for x in val_idx]
-
-    normal_indices = list(range(len(normal_image_list)))
-    np.random.shuffle(normal_indices)
-    split = len(normal_image_list) // 10
-    train_idx, val_idx = normal_indices[split:], normal_indices[:split]
-    train_normal_image_list = [normal_image_list[x] for x in train_idx]
-    val_normal_image_list = [normal_image_list[x] for x in val_idx]
+    train_covid_image_list = source_covid_image_list + target_covid_image_list[100:]
+    train_normal_image_list = normal_image_list[len(normal_image_list) // 10:]
+    val_covid_image_list = target_covid_image_list[:100]
+    val_normal_image_list = normal_image_list[:len(normal_image_list) // 10]
 
     # create customized covid dataset class
     train_covid_dataset = CovidDataset(train_covid_image_list, train_normal_image_list, train=True)
@@ -61,9 +54,9 @@ def train(opt):
     else:
         # setup saved model folder
         init_epoch = 0
-        saved_path = helper.setup_train(os.path.join(current_path, '../logs/train_source'))
+        saved_path = helper.setup_train(os.path.join(current_path, '../logs/train_hybrid'))
 
-    weights = torch.tensor([1.0, 1.0])
+    weights = torch.tensor([1.0, 2.0])
     if opt.cuda:
         weights = weights.cuda()
 

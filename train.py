@@ -5,7 +5,7 @@ Outside wrapper to choose the training mode
 
 import argparse
 
-from train_utils import train_source, train_target
+from train_utils import train_source, train_target, train_hybrid
 
 
 def parseer():
@@ -33,3 +33,5 @@ if __name__ == '__main__':
     elif opt.training_mode == 'train_target':
         train_target.train(opt)
 
+    elif opt.training_mode == 'train_hybrid':
+        train_hybrid.train(opt)
