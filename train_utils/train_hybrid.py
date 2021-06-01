@@ -4,8 +4,10 @@ Pretrain image classification model on hybrid data. Source covid + target covid 
 """
 
 import os
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import numpy as np
+import pandas as pd
 
 import torch
 import torch.nn as nn
@@ -16,28 +18,43 @@ from torch.utils.data import DataLoader
 import train_utils.helper as helper
 from data_utils.CovidDataset import CovidDataset
 from models.res101_backbone import ResNet101Backbone
+from models.res34_backbone import ResNet34Backbone
 
 
 def train(opt):
     current_path = os.path.dirname(__file__)
-    source_dir = os.path.join(current_path, '../data/source')
-    target_dir = os.path.join(current_path, '../data/target')
+    train_csv = pd.read_csv(os.path.join(current_path, '../logs/dvrl_train/train.csv'))
 
-    covid_source_folder = os.path.join(source_dir, 'covid')
-    covid_target_folder = os.path.join(target_dir, 'covid')
-    normal_target_folder = os.path.join(target_dir, 'normal')
+    train_names = train_csv['names'].tolist()
+    train_values = train_csv['data_value'].to_numpy()
 
-    source_covid_image_list = sorted([os.path.join(covid_source_folder, x) for x in os.listdir(covid_source_folder)])
-    target_covid_image_list = sorted([os.path.join(covid_target_folder, x) for x in os.listdir(covid_target_folder)])
-    normal_image_list = sorted([os.path.join(normal_target_folder, x) for x in os.listdir(normal_target_folder)])
+    # sort the train datas based on value ranking
+    n_sort_idx = np.argsort(-train_values)
+    split = int(opt.dvrl_portion * len(n_sort_idx))
+    train_idx = n_sort_idx[:split]
 
-    train_covid_image_list = source_covid_image_list + target_covid_image_list[100:]
-    train_normal_image_list = normal_image_list[len(normal_image_list) // 10:]
-    val_covid_image_list = target_covid_image_list[:100]
-    val_normal_image_list = normal_image_list[:len(normal_image_list) // 10]
+    # get corresponding train examples
+    source_covid_image_list = [train_names[x] for x in train_idx]
+
+    # get target domain training example
+    target_train_dir = os.path.join(current_path, '../data/target_train')
+    covid_folder = os.path.join(target_train_dir, 'covid')
+    normal_folder = os.path.join(target_train_dir, 'normal')
+    covid_image_list = sorted([os.path.join(covid_folder, x) for x in os.listdir(covid_folder)])
+    normal_image_list = sorted([os.path.join(normal_folder, x) for x in os.listdir(normal_folder)])
+
+    train_covid_image_list = source_covid_image_list + covid_image_list
+    train_normal_image_list = normal_image_list
+
+    # get target domain testing example
+    target_test_dir = os.path.join(current_path, '../data/target_test')
+    covid_folder = os.path.join(target_test_dir, 'covid')
+    normal_folder = os.path.join(target_test_dir, 'normal')
+    val_covid_image_list = sorted([os.path.join(covid_folder, x) for x in os.listdir(covid_folder)])
+    val_normal_image_list = sorted([os.path.join(normal_folder, x) for x in os.listdir(normal_folder)])
 
     # create customized covid dataset class
-    train_covid_dataset = CovidDataset(train_covid_image_list, train_normal_image_list, train=True)
+    train_covid_dataset = CovidDataset(train_covid_image_list, train_normal_image_list, train=False)
     val_covid_dataset = CovidDataset(val_covid_image_list, val_normal_image_list, train=False)
 
     # create corresponding dataloader
@@ -56,7 +73,7 @@ def train(opt):
         init_epoch = 0
         saved_path = helper.setup_train(os.path.join(current_path, '../logs/train_hybrid'))
 
-    weights = torch.tensor([1.0, 2.0])
+    weights = torch.tensor([1.0, 1.0])
     if opt.cuda:
         weights = weights.cuda()
 

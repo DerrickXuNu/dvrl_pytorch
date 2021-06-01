@@ -91,4 +91,4 @@ def validation_in_training(model, dataloader, epoch, cuda):
     class_name = ['normal', 'covid']
 
     print('---------------------Epoch %f--------------' % epoch)
-    print(classification_report(label_list, pred_list, target_names=class_name))
+    print(classification_report(label_list, pred_list, target_names=class_name, digits=4))

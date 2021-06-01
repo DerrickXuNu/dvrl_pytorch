@@ -16,12 +16,13 @@ def parseer():
     parser.add_argument("--model_dir", type=str, default='', help='train from last checkpoint. If empty,'
                                                                   'then train from scratch.')
     parser.add_argument("--cuda", action='store_true')
-    parser.add_argument('--batch_size', type=int, default=2000)
+    parser.add_argument('--batch_size', type=int, default=16)
     parser.add_argument('--epoches', type=int, default=1, help='total training epoches')
     parser.add_argument('--save_epoch', type=int, default=2, help='save model frequency')
     parser.add_argument('--display_step', type=int, default=10, help='display training loss frequency')
     parser.add_argument('--val_freq', type=int, default=1, help='validation frequency')
     parser.add_argument('--learning_rate', type=float, default=1e-3, help='learning rate')
+    parser.add_argument('--dvrl_portion', type=float, default=0.8, help='Top % data want to use')
 
     # dvrl related
     parser.add_argument('--inner_batch_size', type=int, default=256)

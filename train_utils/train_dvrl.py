@@ -4,19 +4,18 @@ Training on DVRL class
 """
 
 import os
-
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import pickle
-
 import torch
-from torch.utils.data import DataLoader
+import numpy as np
+import pandas as pd
 
-import train_utils.helper as helper
 import dvrl.dvrl as dvrl
-
+import train_utils.helper as helper
+from torch.utils.data import DataLoader
 from data_utils.FeatureDataset import FeatureDataset
 from models.predictor_model import Predictor
-import train_utils.helper as helper
+
 
 
 def train(opt):
@@ -60,3 +59,28 @@ def train(opt):
 
     # Step5. Train DVRL Value estimator
     dvrl_class.train_dvrl()
+
+    # Step6. Data valuation on COVID class
+    train_features = np.array(train_features)
+    train_labels = np.array(train_labels)
+
+    # we only do valuation on positive classes
+    index = np.where(train_labels == 1)[0]
+    covid_train_features = train_features[index]
+    covid_train_names = [train_names[x][0] for x in index]
+
+    covid_train_features = torch.Tensor(covid_train_features)
+    covid_train_features = covid_train_features.cuda()
+    covid_train_labels = torch.Tensor(train_labels[index]).to(torch.int64)
+    covid_train_labels = covid_train_labels.cuda()
+
+    # load value estimator
+    data_value = dvrl_class.dvrl_estimate(covid_train_features, covid_train_labels)
+    data_value = data_value.reshape(data_value.shape[0])
+    # create csv file for later training
+    final_data = {'names': covid_train_names, 'data_value': data_value}
+    dataframe = pd.DataFrame.from_dict(final_data)
+
+    dataframe.to_csv(os.path.join(current_path, '../logs/dvrl_train/train.csv'), index=False)
+
+
