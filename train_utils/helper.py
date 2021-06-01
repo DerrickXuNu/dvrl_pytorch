@@ -54,7 +54,7 @@ def setup_train(path):
     return path
 
 
-def validation_in_training(model, dataloader, epoch, cuda):
+def validation_in_training(model, dataloader, epoch, cuda, pred_model=None):
     """
     Validate the model on the validation set
     :param cuda: whether to use cuda
@@ -79,7 +79,12 @@ def validation_in_training(model, dataloader, epoch, cuda):
             image = image.cuda()
             label = label.cuda()
 
-        output = model(image)
+        if pred_model:
+            pred_model.eval()
+            output = model(image, False)
+            output = pred_model(output)
+        else:
+            output = model(image)
         _, pred = torch.max(output, 1)
 
         pred = pred.cpu().detach().numpy()
@@ -91,4 +96,4 @@ def validation_in_training(model, dataloader, epoch, cuda):
     class_name = ['normal', 'covid']
 
     print('---------------------Epoch %f--------------' % epoch)
-    print(classification_report(label_list, pred_list, target_names=class_name))
+    print(classification_report(label_list, pred_list, target_names=class_name, digits=4))

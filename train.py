@@ -5,7 +5,7 @@ Outside wrapper to choose the training mode
 
 import argparse
 
-from train_utils import train_source, train_target, train_hybrid
+from train_utils import train_source, train_target, train_hybrid, train_dvrl
 
 
 def parseer():
@@ -16,11 +16,27 @@ def parseer():
     parser.add_argument("--model_dir", type=str, default='', help='train from last checkpoint. If empty,'
                                                                   'then train from scratch.')
     parser.add_argument("--cuda", action='store_true')
-    parser.add_argument('--batch_size', type=int, default=8)
-    parser.add_argument('--epoches', type=int, default=10, help='total training epoches')
+    parser.add_argument('--batch_size', type=int, default=16)
+    parser.add_argument('--epoches', type=int, default=1, help='total training epoches')
     parser.add_argument('--save_epoch', type=int, default=2, help='save model frequency')
     parser.add_argument('--display_step', type=int, default=10, help='display training loss frequency')
     parser.add_argument('--val_freq', type=int, default=1, help='validation frequency')
+    parser.add_argument('--learning_rate', type=float, default=1e-3, help='learning rate')
+    parser.add_argument('--dvrl_portion', type=float, default=0.8
+                        , help='Top % data want to use')
+
+    # dvrl related
+    parser.add_argument('--inner_batch_size', type=int, default=256)
+    parser.add_argument('--inner_iteration', type=int, default=5)
+    parser.add_argument('--inner_learning_rate', type=float, default=1e-3)
+    parser.add_argument('--hidden_dim', type=int, default=100)
+    parser.add_argument('--comb_dim', type=int, default=1)
+    parser.add_argument(
+        '--layer_number',
+        help='number of network layers',
+        default=5,
+        type=int)
+
     opt = parser.parse_args()
     return opt
 
@@ -35,3 +51,6 @@ if __name__ == '__main__':
 
     elif opt.training_mode == 'train_hybrid':
         train_hybrid.train(opt)
+
+    elif opt.training_mode == 'train_dvrl':
+        train_dvrl.train(opt)
