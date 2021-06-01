@@ -43,7 +43,7 @@ def train(opt):
     val_loader = DataLoader(val_dataset, batch_size=opt.inner_batch_size, num_workers=4, shuffle=True)
 
     # Step3. Create predictor
-    pred_model = Predictor()
+    pred_model = Predictor(2048)
     # save the origin model for later use
     saved_path = os.path.join(current_path, '../logs/dvrl_train/origin_model')
     if not os.path.exists(saved_path):
@@ -83,4 +83,5 @@ def train(opt):
 
     dataframe.to_csv(os.path.join(current_path, '../logs/dvrl_train/train.csv'), index=False)
 
+    print(data_value)
 

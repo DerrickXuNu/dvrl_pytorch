@@ -13,6 +13,7 @@ import train_utils.helper as helper
 from data_utils.CovidDataset import CovidDataset
 from models.res34_backbone import ResNet34Backbone
 from models.res101_backbone import ResNet101Backbone
+from models.base_cnn import BasicCNN
 
 # Step1. Load dataset
 current_path = os.path.dirname(__file__)
@@ -37,7 +38,7 @@ val_covid_dataset = CovidDataset(covid_image_list, normal_image_list, train=Fals
 val_loader = DataLoader(val_covid_dataset, batch_size=1, shuffle=False, num_workers=4)
 
 # Step2. Load feature extraction model
-feature_model = ResNet34Backbone(pretrained=True)
+feature_model = BasicCNN()
 feature_model.eval()
 feature_model.cuda()
 

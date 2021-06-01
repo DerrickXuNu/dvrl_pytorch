@@ -17,6 +17,7 @@ import train_utils.helper as helper
 from data_utils.CovidDataset import CovidDataset
 from models.res34_backbone import ResNet34Backbone
 from models.res101_backbone import ResNet101Backbone
+from models.base_cnn import BasicCNN
 
 
 def train(opt):
@@ -53,7 +54,7 @@ def train(opt):
     val_dataloader = DataLoader(val_covid_dataset, batch_size=opt.batch_size, shuffle=False, num_workers=4)
 
     # load model
-    model = ResNet34Backbone(pretrained=True)
+    model = BasicCNN()
 
     # load saved model if any exist
     if opt.model_dir:

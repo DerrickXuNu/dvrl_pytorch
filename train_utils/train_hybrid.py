@@ -19,6 +19,7 @@ import train_utils.helper as helper
 from data_utils.CovidDataset import CovidDataset
 from models.res101_backbone import ResNet101Backbone
 from models.res34_backbone import ResNet34Backbone
+from models.base_cnn import BasicCNN
 
 
 def train(opt):
@@ -33,6 +34,7 @@ def train(opt):
     split = int(opt.dvrl_portion * len(n_sort_idx))
     train_idx = n_sort_idx[:split]
 
+    print(train_values[n_sort_idx])
     # get corresponding train examples
     source_covid_image_list = [train_names[x] for x in train_idx]
 
@@ -62,7 +64,7 @@ def train(opt):
     val_dataloader = DataLoader(val_covid_dataset, batch_size=opt.batch_size, shuffle=False, num_workers=4)
 
     # load model
-    model = ResNet101Backbone(pretrained=True)
+    model = BasicCNN()
 
     # load saved model if any exist
     if opt.model_dir:
@@ -76,6 +78,7 @@ def train(opt):
     weights = torch.tensor([1.0, 1.0])
     if opt.cuda:
         weights = weights.cuda()
+        model.cuda()
 
     # define the loss function
     criterion = nn.CrossEntropyLoss(weight=weights)
@@ -107,7 +110,6 @@ def train(opt):
             if opt.cuda:
                 image_batch = image_batch.cuda()
                 label_batch = label_batch.cuda()
-                model.cuda()
 
             # inference
             output = model(image_batch)
