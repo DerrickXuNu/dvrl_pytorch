@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader
 
 import train_utils.helper as helper
 from data_utils.CovidDataset import CovidDataset
+from models.res34_backbone import ResNet34Backbone
 from models.res101_backbone import ResNet101Backbone
 
 # Step1. Load dataset
@@ -23,20 +24,20 @@ normal_folder = os.path.join(source_dir, 'normal')
 covid_image_list = sorted([os.path.join(covid_folder, x) for x in os.listdir(covid_folder)])
 normal_image_list = sorted([os.path.join(normal_folder, x) for x in os.listdir(normal_folder)])
 
-train_covid_dataset = CovidDataset(covid_image_list, normal_image_list, train=False)
+train_covid_dataset = CovidDataset(covid_image_list, normal_image_list[:len(normal_image_list)//2], train=False)
 train_loader = DataLoader(train_covid_dataset, batch_size=1, shuffle=True, num_workers=4)
 
-val_dir = os.path.join(current_path, '../data/target')
+val_dir = os.path.join(current_path, '../data/target_train')
 covid_folder = os.path.join(val_dir, 'covid')
 normal_folder = os.path.join(val_dir, 'normal')
 covid_image_list = sorted([os.path.join(covid_folder, x) for x in os.listdir(covid_folder)])
 normal_image_list = sorted([os.path.join(normal_folder, x) for x in os.listdir(normal_folder)])
 
-val_covid_dataset = CovidDataset(covid_image_list[100:], normal_image_list[500:700], train=False)
+val_covid_dataset = CovidDataset(covid_image_list, normal_image_list, train=False)
 val_loader = DataLoader(val_covid_dataset, batch_size=1, shuffle=False, num_workers=4)
 
 # Step2. Load feature extraction model
-feature_model = ResNet101Backbone(pretrained=True)
+feature_model = ResNet34Backbone(pretrained=True)
 feature_model.eval()
 feature_model.cuda()
 
