@@ -24,7 +24,7 @@ class ValueEstimator(nn.Module):
 
         layers = []
         # input_dim+label_dim
-        layers.append(nn.Linear(513, hidden_num))
+        layers.append(nn.Linear(2049, hidden_num))
         layers.append(nn.ReLU(inplace=True))
 
         for _ in range(layer_num - 3):

@@ -22,10 +22,12 @@ def parseer():
     parser.add_argument('--display_step', type=int, default=10, help='display training loss frequency')
     parser.add_argument('--val_freq', type=int, default=1, help='validation frequency')
     parser.add_argument('--learning_rate', type=float, default=1e-3, help='learning rate')
-    parser.add_argument('--dvrl_portion', type=float, default=0.8, help='Top % data want to use')
+    parser.add_argument('--dvrl_portion', type=float, default=0.8
+                        , help='Top % data want to use')
 
     # dvrl related
     parser.add_argument('--inner_batch_size', type=int, default=256)
+    parser.add_argument('--inner_iteration', type=int, default=5)
     parser.add_argument('--inner_learning_rate', type=float, default=1e-3)
     parser.add_argument('--hidden_dim', type=int, default=100)
     parser.add_argument('--comb_dim', type=int, default=1)
