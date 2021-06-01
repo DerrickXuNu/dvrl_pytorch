@@ -22,7 +22,7 @@ def parseer():
     parser.add_argument('--display_step', type=int, default=10, help='display training loss frequency')
     parser.add_argument('--val_freq', type=int, default=1, help='validation frequency')
     parser.add_argument('--learning_rate', type=float, default=1e-3, help='learning rate')
-    parser.add_argument('--dvrl_portion', type=float, default=0.8
+    parser.add_argument('--dvrl_portion', type=float, default=0.4
                         , help='Top % data want to use')
 
     # dvrl related

@@ -20,6 +20,7 @@ from data_utils.CovidDataset import CovidDataset
 from models.res101_backbone import ResNet101Backbone
 from models.res34_backbone import ResNet34Backbone
 from models.base_cnn import BasicCNN
+from models.predictor_model import Predictor
 
 
 def train(opt):
@@ -65,6 +66,7 @@ def train(opt):
 
     # load model
     model = BasicCNN()
+    pred_model = Predictor()
 
     # load saved model if any exist
     if opt.model_dir:
@@ -75,16 +77,18 @@ def train(opt):
         init_epoch = 0
         saved_path = helper.setup_train(os.path.join(current_path, '../logs/train_hybrid'))
 
-    weights = torch.tensor([1.0, 1.0])
+    weights = torch.tensor([1.0, 3.0])
     if opt.cuda:
         weights = weights.cuda()
         model.cuda()
+        model.eval()
+        pred_model.cuda()
 
     # define the loss function
     criterion = nn.CrossEntropyLoss(weight=weights)
 
     # specify optimizer
-    optimizer = optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = optim.Adam(pred_model.parameters(), lr=1e-3)
 
     # Decay LR by a factor of 0.1 every 7 epochs
     exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.5)
@@ -101,8 +105,8 @@ def train(opt):
         # loader iteration
         for i, batch_data in enumerate(train_dataloader):
             # clear gradients every batch
-            model.train()
-            model.zero_grad()
+            pred_model.train()
+            pred_model.zero_grad()
             optimizer.zero_grad()
 
             image_batch, label_batch = batch_data['image'], batch_data['label']
@@ -112,7 +116,8 @@ def train(opt):
                 label_batch = label_batch.cuda()
 
             # inference
-            output = model(image_batch)
+            output = model(image_batch, False)
+            output = pred_model(output)
             loss = criterion(output, label_batch)
 
             # back propagation
@@ -126,10 +131,6 @@ def train(opt):
                 print("[epoch %d][%d/%d], total loss: %.4f, accumulated accuracy: %.4f"
                       % (epoch + 1, i + 1, len(train_dataloader), loss.item(), corr_num / total_num))
 
-        # save model
-        if (epoch + 1) % opt.save_epoch == 0:
-            torch.save(model.state_dict(), os.path.join(saved_path, 'net_epoch%d.pth' % (epoch + 1)))
-
         # validation
         if (epoch + 1) % opt.val_freq == 0:
-            helper.validation_in_training(model, val_dataloader, epoch, opt.cuda)
+            helper.validation_in_training(model, val_dataloader, epoch, opt.cuda, pred_model)

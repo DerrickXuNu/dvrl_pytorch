@@ -17,7 +17,6 @@ from data_utils.FeatureDataset import FeatureDataset
 from models.predictor_model import Predictor
 
 
-
 def train(opt):
     # Step1. Load saved pickles to reload the extracted features
     current_path = os.path.dirname(__file__)

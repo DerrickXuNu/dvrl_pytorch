@@ -28,7 +28,7 @@ normal_image_list = sorted([os.path.join(normal_folder, x) for x in os.listdir(n
 train_covid_dataset = CovidDataset(covid_image_list, normal_image_list[:len(normal_image_list)//2], train=False)
 train_loader = DataLoader(train_covid_dataset, batch_size=1, shuffle=True, num_workers=4)
 
-val_dir = os.path.join(current_path, '../data/target_train')
+val_dir = os.path.join(current_path, '../data/target_test')
 covid_folder = os.path.join(val_dir, 'covid')
 normal_folder = os.path.join(val_dir, 'normal')
 covid_image_list = sorted([os.path.join(covid_folder, x) for x in os.listdir(covid_folder)])

@@ -21,6 +21,7 @@ import train_utils.helper as helper
 from models.value_estimator import ValueEstimator
 from dvrl.dvrl_pretrain import pretrain
 from dvrl.dvrl_loss import DvrlLoss
+from models.base_cnn import BasicCNN
 
 
 class Dvrl(object):
@@ -77,7 +78,7 @@ class Dvrl(object):
         init_epoch, self.ori_model = helper.load_saved_model(source_dir, copy.deepcopy(pred_model))
         if init_epoch == 0:
             self.ori_model = pretrain(self.ori_model, self.train_loader, self.inner_lr,
-                                      self.inner_batch_size, [1.0, 1.0], parameters.cuda, 10)
+                                      self.inner_batch_size, [1.0, 1.0], parameters.cuda, 40)
             torch.save(self.ori_model.state_dict(),
                        os.path.join(source_dir, 'net_epoch%d.pth' % 10))
 
@@ -85,7 +86,7 @@ class Dvrl(object):
         init_epoch, self.val_model = helper.load_saved_model(val_dir, copy.deepcopy(pred_model))
         if init_epoch == 0:
             self.val_model = pretrain(self.val_model, self.val_loader, self.inner_lr,
-                                      self.inner_batch_size, [1.0, 1.0], parameters.cuda, 20)
+                                      self.inner_batch_size, [1.0, 1.0], parameters.cuda, 40)
             torch.save(self.val_model.state_dict(),
                        os.path.join(val_dir, 'net_epoch%d.pth' % 10))
 
