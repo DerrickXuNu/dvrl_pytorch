@@ -67,6 +67,9 @@ class CovidDataset(Dataset):
         covid_image_labels = [1] * len(covid_image_list)
         normal_image_labels = [0] * len(normal_image_list)
 
+        self.covid_len = len(covid_image_list)
+        self.normal_len = len(normal_image_list)
+
         self.image_list = covid_image_list + normal_image_list
         self.labels = covid_image_labels + normal_image_labels
 

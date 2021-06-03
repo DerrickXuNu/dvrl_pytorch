@@ -75,7 +75,11 @@ def train(opt):
         init_epoch = 0
         saved_path = helper.setup_train(os.path.join(current_path, '../logs/train_hybrid'))
 
-    weights = torch.tensor([1.0, 1.0])
+    if opt.weighted_loss:
+        weights = torch.tensor([1.0, train_covid_dataset.normal_len / train_covid_dataset.covid_len])
+        print(weights)
+    else:
+        weights = torch.tensor([1.0, 1.0])
     if opt.cuda:
         weights = weights.cuda()
         model.cuda()
@@ -87,7 +91,7 @@ def train(opt):
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
     # Decay LR by a factor of 0.1 every 7 epochs
-    exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.5)
+    exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
 
     step = 0
 
@@ -127,8 +131,8 @@ def train(opt):
                       % (epoch + 1, i + 1, len(train_dataloader), loss.item(), corr_num / total_num))
 
         # save model
-        if (epoch + 1) % opt.save_epoch == 0:
-            torch.save(model.state_dict(), os.path.join(saved_path, 'net_epoch%d.pth' % (epoch + 1)))
+        # if (epoch + 1) % opt.save_epoch == 0:
+        #     torch.save(model.state_dict(), os.path.join(saved_path, 'net_epoch%d.pth' % (epoch + 1)))
 
         # validation
         if (epoch + 1) % opt.val_freq == 0:
